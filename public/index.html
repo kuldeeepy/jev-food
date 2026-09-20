@@ -14,7 +14,9 @@
                   center bottom/cover no-repeat}
   canvas{position:fixed;inset:0;display:block;z-index:2}
 
-  #bar{position:fixed;top:7vh;left:50%;transform:translateX(-50%);width:min(560px,86vw);z-index:10}
+  #bar{position:fixed;top:7vh;left:50%;transform:translateX(-50%);width:min(560px,86vw);z-index:10;
+       pointer-events:none}
+  #bar .box,#bar .chip,#bar #decide{pointer-events:auto}
   .box{position:relative;display:flex;align-items:center;background:#fff;border-radius:16px;
        box-shadow:0 10px 34px -12px #00000026,0 1px 2px #0000000f;
        transition:box-shadow .2s}
@@ -35,7 +37,7 @@
   @keyframes sweep{0%{background-position:-40% 0}100%{background-position:140% 0}}
 
   #via{position:fixed;top:calc(7vh + 168px);left:50%;transform:translateX(-50%);
-       font-size:9.5px;color:#c8c8d0;letter-spacing:.07em;text-transform:uppercase;z-index:10;
+       font-size:9.5px;color:#ffffffcc;text-shadow:0 1px 3px #0b2a4166;letter-spacing:.07em;text-transform:uppercase;z-index:10;
        opacity:0;transition:opacity .2s}
   #via.on{opacity:1}
 

@@ -287,10 +287,11 @@ let last = performance.now();
     // label the row — 10 results is too many to identify by hovering each one
     if (it.lifted && !it.tween && it !== hero) {
       ctx.save();
-      ctx.globalAlpha = it.alpha * (it.hover ? 1 : 0.62);
-      ctx.font = '500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-      ctx.fillStyle = it === selected ? '#18181b' : '#71717a';
-      ctx.fillText(fit(ctx, it.rec.name, rowGap - 12), x, y + R + 13);
+      ctx.globalAlpha = it.alpha * (it.hover ? 1 : 0.88);
+      ctx.font = '600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+      ctx.shadowColor = 'rgba(8,40,64,.55)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 1;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(fit(ctx, it.rec.name, rowGap - 12), x, y + R + 14);
       ctx.restore();
     }
   }
