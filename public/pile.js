@@ -136,7 +136,7 @@ async function resolve(q) {
   try {
     const r = await fetch('/api/match', {
       method: 'POST', signal: ac.signal, headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: q, dishes: items.map(it => it.rec) })
+      body: JSON.stringify({ query: q })   // the server owns the dish list
     });
     clearTimeout(bail); loading = false; document.body.classList.remove('busy');
     const j = await r.json();

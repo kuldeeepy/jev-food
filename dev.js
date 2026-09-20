@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { extname, join, normalize, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { match } from './api/match.js';
+import DISHES from './api/dishes.json' with { type: 'json' };
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), 'public');
 const PORT = Number(process.env.PORT) || 8099;
@@ -34,11 +35,11 @@ async function api(req, res) {
   let body = '';
   for await (const chunk of req) body += chunk;
   try {
-    const { query, dishes } = JSON.parse(body);
+    const { query } = JSON.parse(body);
     const started = Date.now();
-    const out = await match(query, dishes, KEY);
+    const out = await match(query, DISHES, KEY);
     const hits = Object.values(out.scores).filter(s => s >= out.threshold).length;
-    console.log(`jev "${query}" → ${hits}/${dishes.length} in ${Date.now() - started}ms $${out.cost ?? '?'}`);
+    console.log(`jev "${query}" → ${hits}/${Object.keys(out.scores).length} in ${Date.now() - started}ms $${out.cost ?? '?'}`);
     json(res, 200, out);
   } catch (err) {
     console.error('jev failed:', err.message);
