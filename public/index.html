@@ -1,0 +1,126 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Plate — the pile</title>
+<style>
+  :root{ --bg:#f1f1f3; --ink:#18181b; --dim:#8a8a93; --line:#e2e2e7; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#4E8FCE;color:var(--ink);
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif}
+
+  /* Hero scene, exported from the Visual Vault Figma file. The heap settles onto its grass line. */
+  .sky{position:fixed;inset:0;z-index:0;pointer-events:none;
+       background:image-set(url(hero.webp) type("image/webp"), url(hero-fallback.jpg) type("image/jpeg"))
+                  center bottom/cover no-repeat}
+  canvas{position:fixed;inset:0;display:block;z-index:2}
+
+  #bar{position:fixed;top:7vh;left:50%;transform:translateX(-50%);width:min(560px,86vw);z-index:10}
+  .box{position:relative;display:flex;align-items:center;background:#fff;border-radius:16px;
+       box-shadow:0 10px 34px -12px #00000026,0 1px 2px #0000000f;
+       transition:box-shadow .2s}
+  .box:focus-within{box-shadow:0 14px 42px -12px #00000033,0 0 0 3px #18181b12}
+  #q{flex:1;padding:20px 22px;border:0;border-radius:16px;background:transparent;
+     color:var(--ink);font-size:19px;outline:none}
+  #q::placeholder{color:#b4b4bb}
+  #clear{border:0;background:transparent;color:#b4b4bb;font-size:19px;cursor:pointer;
+         padding:0 18px 0 6px;line-height:1;opacity:0;transition:.15s}
+  #clear.on{opacity:1}
+  #clear:hover{color:var(--ink)}
+
+  /* the round trip is ~1s; without this the page looks frozen */
+  .box:after{content:'';position:absolute;left:14px;right:14px;bottom:0;height:2px;border-radius:2px;
+             background:linear-gradient(90deg,transparent,#18181b55,transparent);
+             background-size:40% 100%;background-repeat:no-repeat;opacity:0;transition:opacity .2s}
+  body.busy .box:after{opacity:1;animation:sweep 1s ease-in-out infinite}
+  @keyframes sweep{0%{background-position:-40% 0}100%{background-position:140% 0}}
+
+  #via{position:fixed;top:calc(7vh + 168px);left:50%;transform:translateX(-50%);
+       font-size:9.5px;color:#c8c8d0;letter-spacing:.07em;text-transform:uppercase;z-index:10;
+       opacity:0;transition:opacity .2s}
+  #via.on{opacity:1}
+
+  #chips{margin-top:14px;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;transition:opacity .2s}
+  #chips.hide{opacity:0;pointer-events:none}
+  .chip{padding:5px 12px;border:1px solid var(--line);border-radius:999px;color:var(--dim);
+        cursor:pointer;background:#fff;font-size:12.5px;transition:.15s;user-select:none}
+  .chip:hover{color:var(--ink);border-color:#c3c3cb;transform:translateY(-1px)}
+  .chip:active{transform:scale(.94)}
+
+  /* hover label that tracks an emoji in the result row */
+  #tip{position:fixed;z-index:12;padding:5px 10px;border-radius:8px;background:#22222a;color:#fff;
+       font-size:12px;font-weight:500;white-space:nowrap;pointer-events:none;
+       transform:translate(-50%,-100%);opacity:0;transition:opacity .13s}
+  #tip.on{opacity:1}
+  #tip:after{content:'';position:absolute;left:50%;top:100%;margin-left:-4px;
+             border:4px solid transparent;border-top-color:#22222a}
+
+  /* the reveal */
+  #hero{position:fixed;left:50%;top:58%;transform:translate(-50%,0) translateY(14px);
+        text-align:center;z-index:11;opacity:0;pointer-events:none;width:min(420px,88vw);
+        transition:opacity .45s ease,transform .55s cubic-bezier(.22,1,.36,1)}
+  #hero.on{opacity:1;transform:translate(-50%,0)}
+  #hero .hn{font-size:30px;font-weight:650;letter-spacing:-.022em;margin-bottom:6px}
+  #hero .hs{font-size:12.5px;color:#b5790a;font-variant-numeric:tabular-nums;margin-bottom:13px}
+  #hero .hq{font-size:15px;color:#5b5b64;line-height:1.5}
+
+  /* A solid dark pill among pale chips reads as "already selected".
+     Light fill instead, with a gradient ring travelling smoothly around it. */
+  @property --ang{ syntax:'<angle>'; initial-value:0deg; inherits:false }
+  #decide{position:relative;margin-left:6px;padding:6px 15px;border:0;border-radius:999px;
+          cursor:pointer;background:#fff;color:#18181b;font-size:12.5px;font-weight:500;
+          font-family:inherit;transition:transform .15s,box-shadow .2s;
+          box-shadow:0 1px 2px #00000012}
+  #decide:before{content:'';position:absolute;inset:-1.5px;border-radius:inherit;padding:1.5px;
+          background:conic-gradient(from var(--ang),#f0b429,#ef6b52,#8b6ef2,#2fb6a8,#f0b429);
+          -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          mask-composite:exclude;animation:orbit 3.4s linear infinite}
+  @keyframes orbit{to{--ang:360deg}}
+  /* Firefox has no @property, so the ring sits still rather than breaking */
+  @supports not (background:conic-gradient(from var(--ang),#000,#fff)){
+    #decide:before{background:linear-gradient(90deg,#f0b429,#8b6ef2,#2fb6a8);animation:none}
+  }
+  #decide:hover{transform:translateY(-1px);box-shadow:0 4px 12px -4px #00000026}
+  #decide:active{transform:scale(.95)}
+  @media (prefers-reduced-motion:reduce){ #decide:before{animation:none} }
+
+  /* detail modal */
+  #veil{position:fixed;inset:0;background:#10101788;backdrop-filter:blur(3px);z-index:20;
+        opacity:0;pointer-events:none;transition:opacity .22s}
+  #veil.on{opacity:1;pointer-events:auto}
+  #modal{position:fixed;left:50%;top:50%;width:min(390px,90vw);z-index:21;
+         padding:26px 28px 24px;border-radius:20px;background:#fff;
+         box-shadow:0 30px 80px -24px #00000055;
+         transform:translate(-50%,-46%) scale(.94);opacity:0;pointer-events:none;
+         transition:transform .26s cubic-bezier(.22,1.2,.36,1),opacity .2s}
+  #modal.on{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+  #modal .big{font-size:52px;line-height:1;margin-bottom:12px;display:block;
+              animation:pop .42s cubic-bezier(.22,1.4,.36,1)}
+  @keyframes pop{0%{transform:scale(.3) rotate(-14deg);opacity:0}100%{transform:none;opacity:1}}
+  #modal h3{margin:0 0 5px;font-size:21px;font-weight:650;letter-spacing:-.01em}
+  #modal .n{color:#b5790a;font-variant-numeric:tabular-nums;font-size:13px;margin-bottom:16px}
+  #modal .quip{font-size:14.5px;line-height:1.5;color:#3f3f46;margin-bottom:16px}
+  #modal .how{color:#71717a;font-size:13px;line-height:1.5;
+              background:#f6f6f8;border-radius:10px;padding:11px 13px;margin-bottom:12px}
+  #modal .tip{color:#9a9aa2;font-size:12px;font-style:italic;
+              border-top:1px solid var(--line);padding-top:11px}
+  #modal .x{position:absolute;top:16px;right:18px;border:0;background:transparent;
+            color:#c2c2ca;font-size:22px;line-height:1;cursor:pointer}
+  #modal .x:hover{color:var(--ink)}
+  #modal .tag{display:inline-block;margin-left:7px;padding:2px 8px;border-radius:999px;
+              background:#f3f3f5;color:#9a9aa2;font-size:10.5px;vertical-align:middle}
+</style>
+
+<div id="bar">
+  <div class="box"><input id="q" autocomplete="off" spellcheck="false" placeholder="what do you feel like?"><button id="clear">&times;</button></div>
+  <div id="chips"></div>
+</div>
+<div id="via"></div>
+<div class="sky" role="img" aria-label="Open sky over a field of grass"></div>
+<div id="hero"></div>
+<div id="tip"></div>
+<div id="veil"></div>
+<div id="modal"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+<script src="./pile.js"></script>

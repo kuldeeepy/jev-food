@@ -1,0 +1,11 @@
+{
+  "name": "jev-food",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pick a meal by rummaging through a heap of them. Matching runs on Jev.",
+  "scripts": {
+    "dev": "node dev.js"
+  },
+  "license": "MIT"
+}
